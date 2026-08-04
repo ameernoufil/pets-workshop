@@ -1,0 +1,41 @@
+# .github/workflows/markdown-link-check.yml
+# Validates links in Markdown files on pull requests that touch documentation
+# or workshop content. This is the repository's first CI workflow and is kept
+# intentionally lightweight so it does not interfere with workshop exercises.
+
+name: Markdown Link Check
+
+on:
+  pull_request:
+    paths:
+      - 'content/**'
+      - '**.md'
+
+permissions:
+  contents: read
+
+jobs:
+  link-check:
+    name: Check Markdown links
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run lychee link checker
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # --base .        Resolve relative links from the repository root.
+          # --no-progress   Keep logs concise.
+          # --timeout 30    Wait up to 30 seconds per request.
+          # --retry 3       Retry transient failures to reduce noise.
+          # --accept 429    Treat HTTP 429 (rate limit) as a success; common
+          #                 for GitHub docs and Microsoft Learn links.
+          args: >-
+            --base .
+            --no-progress
+            --timeout 30
+            --retry 3
+            --accept 200..299,429
+            './**/*.md'
+          fail: true
